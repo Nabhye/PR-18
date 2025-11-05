@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SONIC AIR SENTINEL | Login</title>
+  
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Icons & Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1a3c27, #2a5238);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      overflow: hidden;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 40px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.8s ease;
+    }
+
+    .login-title {
+      font-size: 2rem;
+      background: linear-gradient(to right, #98FB98, #3CB371);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 25px;
+      font-size: 0.95rem;
+    }
+
+    input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      border-radius: 10px;
+      padding: 12px 15px;
+      width: 100%;
+      margin-bottom: 15px;
+      transition: 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #98FB98;
+      box-shadow: 0 0 5px rgba(152, 251, 152, 0.3);
+    }
+
+    button {
+      background: linear-gradient(to right, #2E8B57, #3CB371);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-weight: 600;
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(46, 139, 87, 0.4);
+    }
+
+    .switch-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .switch-link a {
+      color: #98FB98;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .switch-link a:hover {
+      text-decoration: underline;
+    }
+
+    .google-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      color: white;
+      width: 100%;
+      margin-top: 15px;
+      transition: 0.3s;
+    }
+
+    .google-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="glass-card">
+    <h1 class="login-title">FIRE EXTINGUISHER ROBOT</h1>
+    <p class="subtitle" id="form-subtitle">Sign in to your account</p>
+
+    <!-- Login Form -->
+    <form id="login-form">
+      <input type="email" id="login-email" placeholder="Email address" required>
+      <input type="password" id="login-password" placeholder="Password" required>
+      <button type="submit">Sign In</button>
+      <div class="google-btn" id="google-signin-btn">
+        <i class="fab fa-google"></i> Sign in with Google
+      </div>
+    </form>
+
+    <!-- Signup Form -->
+    <form id="signup-form" class="hidden">
+      <input type="email" id="signup-email" placeholder="Email address" required>
+      <input type="password" id="signup-password" placeholder="Password" required>
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <div class="switch-link">
+      <span id="toggle-text">Don't have an account? <a href="#" id="show-signup">Sign Up</a></span>
+    </div>
+
+    <div id="status-message" class="text-center mt-4 text-sm text-yellow-300"></div>
+  </div>
+
+  <!-- Firebase Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { 
+      getAuth, signInWithPopup, GoogleAuthProvider, 
+      onAuthStateChanged, createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, setPersistence, browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDKKZ2KgSgV53W_cubnkaIo1qmNRGGrZUU",
+      authDomain: "pr-18-aa6d4.firebaseapp.com",
+      projectId: "pr-18-aa6d4",
+      storageBucket: "pr-18-aa6d4.firebasestorage.app",
+      messagingSenderId: "858386052531",
+      appId: "1:858386052531:web:ce61e6c7718ab8b47b47c6",
+      measurementId: "G-CBZ56WEQE6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
+    const toggleText = document.getElementById("toggle-text");
+    const showSignup = document.getElementById("show-signup");
+    const statusMessage = document.getElementById("status-message");
+    const googleBtn = document.getElementById("google-signin-btn");
+    const subtitle = document.getElementById("form-subtitle");
+
+    showSignup.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (signupForm.classList.contains("hidden")) {
+        loginForm.classList.add("hidden");
+        signupForm.classList.remove("hidden");
+        subtitle.textContent = "Create your account";
+        toggleText.innerHTML = 'Already have an account? <a href="#" id="show-login">Sign In</a>';
+      } else {
+        loginForm.classList.remove("hidden");
+        signupForm.classList.add("hidden");
+        subtitle.textContent = "Sign in to your account";
+        toggleText.innerHTML = 'Don’t have an account? <a href="#" id="show-signup">Sign Up</a>';
+      }
+    });
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+        await signInWithEmailAndPassword(auth, loginForm["login-email"].value, loginForm["login-password"].value);
+      } catch (error) {
+        statusMessage.textContent = error.message;
+      }
+    });
+
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await createUserWithEmailAndPassword(auth, signupForm["signup-email"].value, signupForm["signup-password"].value);
+      } catch (error) {
+        statusMessage.textContent = error.message;
+      }
+    });
+
+    googleBtn.addEventListener("click", async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        statusMessage.textContent = error.message;
+      }
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) window.location.href = "dashboard.html";
+    });
+  </script>
+</body>
+</html>
